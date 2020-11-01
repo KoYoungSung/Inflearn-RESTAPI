@@ -1,10 +1,15 @@
 package ko.springrestapi.events;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RunWith(JUnitParamsRunner.class)
 public class EventTest {
 
     @Test
@@ -32,6 +37,51 @@ public class EventTest {
         assertThat(event.getDescription()).isEqualTo(description);
     }
 
+    @Test
+   /* @Parameters({
+            "0,0, true",
+            "100,0,false",
+            "0,100,false"
+    })*/
+    @Parameters/*(method = "parametersForTestFree")*/
+    public void testFree(int basePrice, int maxPrice, boolean isFree) {
+        //Given
+        Event event = Event.builder()
+                .basePrice(basePrice)
+                .maxPrice(maxPrice)
+                .build();
+        //When
+        event.update();
+        //Then
+        assertThat(event.isFree()).isEqualTo(isFree);
+    }
+    private Object[] parametersForTestFree() {
+        return new Object[]{
+                new Object[] {0,0,true},
+                new Object[] {0,100,false},
+                new Object[] {100,0,false},
+                new Object[] {100,200,false}
+        };
+    }
 
+    @Test
+    @Parameters
+    public void testOffline(String location, boolean isOffline) {
+        //Given
+        Event event = Event.builder()
+                .location(location)
+                .build();
+        //When
+        event.update();
+        //Then
+        assertThat(event.isOffline()).isEqualTo(isOffline);
+    }
 
+    private Object[] parametersForTestOffline() {
+        return new Object[]{
+                new Object[] {"집",true},
+                new Object[] {null,false},
+                new Object[] {"   ",false},
+        };
+    }
 }
