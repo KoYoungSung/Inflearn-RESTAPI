@@ -1,8 +1,6 @@
 package ko.springrestapi.accounts;
 
 import org.assertj.core.api.Assertions;
-import org.hamcrest.Matchers;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -23,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @ActiveProfiles("test")
 public class AccountServiceTest {
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Autowired
     AccountService accountService;
@@ -54,11 +50,8 @@ public class AccountServiceTest {
 
     @Test
     public void findByUsernameFail() {
-        String username = "random@email.com";
-
-        expectedException.expect(UsernameNotFoundException.class);
-        expectedException.expectMessage(Matchers.containsString(username));
-
-        accountService.loadUserByUsername(username);
+        assertThrows(UsernameNotFoundException.class, () ->{
+            accountService.loadUserByUsername("random@email.com");
+        });
     }
 }
