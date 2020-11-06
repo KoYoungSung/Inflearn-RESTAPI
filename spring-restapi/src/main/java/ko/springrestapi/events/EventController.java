@@ -12,13 +12,11 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -29,7 +27,7 @@ public class EventController {
 
     private final EventRepository eventRepository;
     private final ModelMapper modelMapper;
-    private final EventValidator eventValidator ;
+    private final EventValidator eventValidator;
 
 
     public EventController(EventRepository eventRepository, ModelMapper modelMapper, EventValidator eventValidator) {
@@ -40,11 +38,11 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
-        if(errors.hasErrors()){
+        if (errors.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-        eventValidator.validate(eventDto,errors);
-        if(errors.hasErrors()){
+        eventValidator.validate(eventDto, errors);
+        if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
 
@@ -53,7 +51,6 @@ public class EventController {
         Event newEvent = this.eventRepository.save(event);
         WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
 
-//        var selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
         URI createdUri = selfLinkBuilder.toUri();
         EventResource eventResource = new EventResource(event);
         eventResource.add(linkTo(EventController.class).withRel("query-events"));
@@ -76,4 +73,17 @@ public class EventController {
 */
         return ResponseEntity.ok(pagedResources);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getEvent(@PathVariable Integer id) {
+        Optional<Event> optionalEvent = this.eventRepository.findById(id);
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Event event = optionalEvent.get();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(new Link("/docs/index.html#resoucres-events-get").withRel("profile"));
+        return ResponseEntity.ok(eventResource);
+    }
+
 }
