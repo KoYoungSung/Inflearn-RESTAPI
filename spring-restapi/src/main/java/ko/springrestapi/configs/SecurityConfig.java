@@ -49,7 +49,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
 
-    @Override
+    /*@Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .anonymous()
@@ -60,5 +60,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .mvcMatchers(HttpMethod.GET, "/api/**").authenticated()
                 .anyRequest().authenticated();
 
-    }
+    }*/
 }
