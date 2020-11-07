@@ -114,7 +114,7 @@ public class EventController {
         }
 
         Event existingEvent = optionalEvent.get();
-        if (!event.getManager().equals(currentUser)) {
+        if (!existingEvent.getManager().equals(currentUser)) {
             return new ResponseEntity(HttpStatus.UNAUTHORIZED);
         }
         this.modelMapper.map(eventDto, existingEvent);
