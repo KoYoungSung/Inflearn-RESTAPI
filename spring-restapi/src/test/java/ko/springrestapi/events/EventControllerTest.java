@@ -4,6 +4,7 @@ import ko.springrestapi.accounts.Account;
 import ko.springrestapi.accounts.AccountRepository;
 import ko.springrestapi.accounts.AccountRole;
 import ko.springrestapi.accounts.AccountService;
+import ko.springrestapi.common.AppProperties;
 import ko.springrestapi.common.BaseControllerTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,9 @@ public class EventControllerTest extends BaseControllerTest {
 
     @Autowired
     AccountService accountService;
+
+    @Autowired
+    AppProperties appProperties;
 
     @Autowired
     AccountRepository accountRepository;
@@ -135,23 +139,17 @@ public class EventControllerTest extends BaseControllerTest {
 
     private String getAccessToken() throws Exception {
 
-        String username = "ko@naver.com";
-        String password = "ko";
         Account ko = Account.builder()
-                .email(username)
-                .password(password)
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
                 .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
                 .build();
         this.accountService.saveAccount(ko);
 
-        String clientId = "myApp";
-        String clientSecret = "pass";
-
-
         ResultActions perform = this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getAdminUsername())
+                .param("password", appProperties.getAdminPassword())
                 .param("grant_type", "password")
         );
         var responseBody = perform.andReturn().getResponse().getContentAsString();

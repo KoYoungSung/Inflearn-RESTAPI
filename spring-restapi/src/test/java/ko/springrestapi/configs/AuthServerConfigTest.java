@@ -3,6 +3,7 @@ package ko.springrestapi.configs;
 import ko.springrestapi.accounts.Account;
 import ko.springrestapi.accounts.AccountRole;
 import ko.springrestapi.accounts.AccountService;
+import ko.springrestapi.common.AppProperties;
 import ko.springrestapi.common.BaseControllerTest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
@@ -23,31 +24,23 @@ class AuthServerConfigTest extends BaseControllerTest {
     @Autowired
     AccountService accountService;
 
-    @SneakyThrows
+    @Autowired
+    AppProperties appProperties;
+
+
     @Test
     @DisplayName("인증 토큰을 발급 받는 테스트")
-    public void getAuthToken() {
-
-
-        String username = "ko@naver.com";
-        String password = "ko";
-        Account ko = Account.builder()
-                .email(username)
-                .password(password)
-                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-                .build();
-        this.accountService.saveAccount(ko);
-
-        String clientId = "myApp";
-        String clientSecret = "pass";
-
-
+    public void getAuthToken() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-                .with(httpBasic(clientId, clientSecret))
-                .param("username", username)
-                .param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getUserUsername())
+                .param("password", appProperties.getUserPassword())
                 .param("grant_type", "password")
-        );
+
+        )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("access_token").exists());
 
     }
 
