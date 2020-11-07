@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Description;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.util.Jackson2JsonParser;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -227,6 +229,7 @@ public class EventControllerTest extends BaseControllerTest {
         ;
     }
 
+
     @Test
     @Description("30개의 이벤트를 10개씩 조회하는 두번쨰 페이지 조회하기 ")
     public void queryEvents() throws Exception {
@@ -244,6 +247,32 @@ public class EventControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("page").exists())
                 .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
                 .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-events"))
+        ;
+
+    }
+
+
+    @Test
+    @Description("")
+    public void queryEventsWithAuthentication() throws Exception {
+        //Given
+        IntStream.range(0, 30).forEach(this::generatedEvent);
+
+        //When
+        this.mockMvc.perform(get("/api/events")
+                .header(HttpHeaders.AUTHORIZATION,"Bearer"+getAccessToken())
+                .param("page", "1")
+                .param("size", "10")
+                .param("order", "name,DESC")
+        )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+                .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.create-event").exists())
                 .andExpect(jsonPath("_links.profile").exists())
                 .andDo(document("query-events"))
         ;
@@ -286,6 +315,7 @@ public class EventControllerTest extends BaseControllerTest {
         eventDto.setName(eventName);
 
         this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .header(HttpHeaders.AUTHORIZATION,"Bearer"+getAccessToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
